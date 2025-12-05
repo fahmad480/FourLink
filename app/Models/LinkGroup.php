@@ -19,6 +19,12 @@ class LinkGroup extends Model
         'thumbnail',
         'is_active',
         'views_count',
+        'password',
+        'instagram_url',
+        'facebook_url',
+        'x_url',
+        'threads_url',
+        'website_url',
     ];
 
     protected $casts = [

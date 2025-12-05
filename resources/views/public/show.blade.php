@@ -80,6 +80,41 @@
             @if($linkGroup->description)
                 <p class="text-muted mb-4">{{ $linkGroup->description }}</p>
             @endif
+
+            {{-- Social Media Links --}}
+            @if($linkGroup->instagram_url || $linkGroup->facebook_url || $linkGroup->x_url || $linkGroup->threads_url || $linkGroup->website_url)
+                <div class="social-links mb-4">
+                    @if($linkGroup->instagram_url)
+                        <a href="{{ $linkGroup->instagram_url }}" target="_blank" class="btn btn-link text-decoration-none" title="Instagram">
+                            <i class="fab fa-instagram fa-2x text-danger"></i>
+                        </a>
+                    @endif
+                    
+                    @if($linkGroup->facebook_url)
+                        <a href="{{ $linkGroup->facebook_url }}" target="_blank" class="btn btn-link text-decoration-none" title="Facebook">
+                            <i class="fab fa-facebook fa-2x text-primary"></i>
+                        </a>
+                    @endif
+                    
+                    @if($linkGroup->x_url)
+                        <a href="{{ $linkGroup->x_url }}" target="_blank" class="btn btn-link text-decoration-none" title="X (Twitter)">
+                            <i class="fab fa-x-twitter fa-2x text-dark"></i>
+                        </a>
+                    @endif
+                    
+                    @if($linkGroup->threads_url)
+                        <a href="{{ $linkGroup->threads_url }}" target="_blank" class="btn btn-link text-decoration-none" title="Threads">
+                            <i class="fab fa-threads fa-2x text-dark"></i>
+                        </a>
+                    @endif
+                    
+                    @if($linkGroup->website_url)
+                        <a href="{{ $linkGroup->website_url }}" target="_blank" class="btn btn-link text-decoration-none" title="Website">
+                            <i class="fas fa-globe fa-2x text-info"></i>
+                        </a>
+                    @endif
+                </div>
+            @endif
             
             <div class="components-list">
                 @foreach($linkGroup->components as $component)
@@ -87,7 +122,11 @@
                         <a href="{{ $component->content }}" 
                            class="component-link" 
                            target="_blank">
-                            <i class="fas fa-link me-2"></i>
+                            @if($component->emoji)
+                                <span style="font-size: 1.5rem; margin-right: 8px;">{{ $component->emoji }}</span>
+                            @else
+                                <i class="fas fa-link me-2"></i>
+                            @endif
                             {{ $component->title ?: $component->content }}
                         </a>
                     
@@ -109,15 +148,18 @@
                                  alt="{{ $component->title }}">
                         </div>
                     
-                    @elseif($component->type === 'video' && $component->file_path)
+                    @elseif($component->type === 'video' && $component->content)
                         <div class="component-content">
                             @if($component->title)
                                 <h5 class="mb-3">{{ $component->title }}</h5>
                             @endif
-                            <video controls class="w-100 rounded">
-                                <source src="{{ asset('storage/' . $component->file_path) }}">
-                                Your browser does not support the video tag.
-                            </video>
+                            <div class="ratio ratio-16x9">
+                                <iframe src="https://www.youtube.com/embed/{{ $component->content }}" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                        allowfullscreen>
+                                </iframe>
+                            </div>
                         </div>
                     
                     @elseif($component->type === 'file' && $component->file_path)

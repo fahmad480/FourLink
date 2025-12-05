@@ -36,15 +36,32 @@ class LinkComponentController extends Controller
 
         $validated['link_group_id'] = $linkGroup->id;
 
-        // Handle file upload for image, video, and file types
-        if ($request->hasFile('file')) {
+        // Handle video type - expect YouTube ID in content field
+        if ($validated['type'] === 'video') {
+            if (empty($validated['content'])) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['content' => ['YouTube Video ID is required for video components.']]
+                ], 422);
+            }
+            // Validate YouTube ID format (alphanumeric, underscore, hyphen, 11 characters)
+            if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $validated['content'])) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['content' => ['Please enter a valid YouTube Video ID (11 characters).']]
+                ], 422);
+            }
+            // Don't allow file upload for video type
+            $validated['file_path'] = null;
+        }
+        // Handle file upload for image and file types only
+        elseif ($request->hasFile('file')) {
             $file = $request->file('file');
             $type = $validated['type'];
             
             // Determine storage folder based on type
             $folder = match($type) {
                 'image' => 'images',
-                'video' => 'videos',
                 'file' => 'files',
                 default => 'uploads'
             };
@@ -82,6 +99,14 @@ class LinkComponentController extends Controller
             abort(404);
         }
 
+        // Return JSON for AJAX requests
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'component' => $component
+            ]);
+        }
+
         return view('components.edit', compact('linkGroup', 'component'));
     }
 
@@ -96,14 +121,37 @@ class LinkComponentController extends Controller
         $validated = $request->validate([
             'type' => 'required|in:' . implode(',', LinkComponent::getTypes()),
             'title' => 'nullable|string|max:255',
+            'emoji' => 'nullable|string|max:10',
             'content' => 'nullable|string',
             'file' => 'nullable|file|max:10240',
             'order' => 'nullable|integer',
             'is_active' => 'boolean',
         ]);
 
-        // Handle file upload
-        if ($request->hasFile('file')) {
+        // Handle video type - YouTube ID
+        if ($validated['type'] === 'video') {
+            if ($request->filled('content')) {
+                $youtubeId = trim($validated['content']);
+                if (strlen($youtubeId) !== 11) {
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'errors' => ['content' => ['YouTube Video ID must be exactly 11 characters.']]
+                        ], 422);
+                    }
+                    return back()->withErrors(['content' => 'YouTube Video ID must be exactly 11 characters.'])->withInput();
+                }
+            }
+            // Clear file_path for video type
+            $validated['file_path'] = null;
+            
+            // Delete old file if exists
+            if ($component->file_path) {
+                Storage::disk('public')->delete($component->file_path);
+            }
+        }
+        // Handle file upload for other types
+        elseif ($request->hasFile('file')) {
             // Delete old file
             if ($component->file_path) {
                 Storage::disk('public')->delete($component->file_path);
@@ -114,8 +162,8 @@ class LinkComponentController extends Controller
             
             $folder = match($type) {
                 'image' => 'images',
-                'video' => 'videos',
                 'file' => 'files',
+                'embed' => 'embeds',
                 default => 'uploads'
             };
 

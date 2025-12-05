@@ -77,10 +77,14 @@
                                     @elseif($component->type === 'image' && $component->file_path)
                                         <img src="{{ asset('storage/' . $component->file_path) }}" 
                                              class="img-fluid rounded mt-2" style="max-height: 200px;">
-                                    @elseif($component->type === 'video' && $component->file_path)
-                                        <video controls class="w-100 mt-2" style="max-height: 300px;">
-                                            <source src="{{ asset('storage/' . $component->file_path) }}">
-                                        </video>
+                                    @elseif($component->type === 'video' && $component->content)
+                                        <div class="ratio ratio-16x9 mt-2" style="max-width: 500px;">
+                                            <iframe src="https://www.youtube.com/embed/{{ $component->content }}" 
+                                                    frameborder="0" 
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                    allowfullscreen>
+                                            </iframe>
+                                        </div>
                                     @elseif($component->type === 'file' && $component->file_path)
                                         <a href="{{ asset('storage/' . $component->file_path) }}" 
                                            class="btn btn-sm btn-outline-primary mt-2" download>
@@ -110,6 +114,72 @@
                     @endforelse
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Component Modal -->
+<div class="modal fade" id="editComponentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Component</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editComponentForm" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <input type="hidden" id="edit_component_id" name="component_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_type" class="form-label">Type *</label>
+                        <select class="form-select" id="edit_type" name="type" required>
+                            <option value="">Select Type</option>
+                            <option value="link">Link</option>
+                            <option value="text">Text</option>
+                            <option value="image">Image</option>
+                            <option value="video">Video</option>
+                            <option value="file">File</option>
+                            <option value="embed">Embed Code</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="edit_title" name="title">
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3" id="editEmojiField">
+                        <label for="edit_emoji" class="form-label">Emoji (Optional for Links)</label>
+                        <input type="text" class="form-control" id="edit_emoji" name="emoji" placeholder="Pick an emoji 😊" maxlength="4">
+                        <div class="invalid-feedback"></div>
+                        <small class="text-muted">Add an emoji to display instead of the default icon. Works best with link type.</small>
+                    </div>
+
+                    <div class="mb-3" id="editContentField">
+                        <label for="edit_content" class="form-label" id="editContentLabel">Content</label>
+                        <textarea class="form-control" id="edit_content" name="content" rows="3"></textarea>
+                        <div class="invalid-feedback"></div>
+                        <small class="text-muted" id="editContentHelp"></small>
+                    </div>
+
+                    <div class="mb-3 d-none" id="editFileField">
+                        <label for="edit_file" class="form-label" id="editFileLabel">File</label>
+                        <div id="currentFilePreview" class="mb-2"></div>
+                        <input type="file" class="form-control" id="edit_file" name="file">
+                        <div class="invalid-feedback"></div>
+                        <small class="text-muted" id="editFileHelp">Leave empty to keep current file</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitEditComponentBtn">
+                        <i class="fas fa-save"></i> Update Component
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -145,16 +215,25 @@
                         <div class="invalid-feedback"></div>
                     </div>
 
+                    <div class="mb-3" id="emojiField">
+                        <label for="emoji" class="form-label">Emoji (Optional for Links)</label>
+                        <input type="text" class="form-control" id="emoji" name="emoji" placeholder="Pick an emoji 😊" maxlength="4">
+                        <div class="invalid-feedback"></div>
+                        <small class="text-muted">Add an emoji to display instead of the default icon. Works best with link type.</small>
+                    </div>
+
                     <div class="mb-3" id="contentField">
-                        <label for="content" class="form-label">Content</label>
+                        <label for="content" class="form-label" id="contentLabel">Content</label>
                         <textarea class="form-control" id="content" name="content" rows="3"></textarea>
                         <div class="invalid-feedback"></div>
+                        <small class="text-muted" id="contentHelp"></small>
                     </div>
 
                     <div class="mb-3 d-none" id="fileField">
-                        <label for="file" class="form-label">File</label>
+                        <label for="file" class="form-label" id="fileLabel">File</label>
                         <input type="file" class="form-control" id="file" name="file">
                         <div class="invalid-feedback"></div>
+                        <small class="text-muted" id="fileHelp"></small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -169,21 +248,72 @@
 </div>
 @endsection
 
+@include('components.cropper-modal')
+
 @push('scripts')
 <script>
 $(document).ready(function() {
+    let imageFile = null;
+    
+    // Handle file input change for image components - trigger cropper
+    $('#file').on('change', function(e) {
+        const file = e.target.files[0];
+        const type = $('#type').val();
+        
+        if (file && type === 'image') {
+            imageFile = file;
+            // Initialize cropper with free aspect ratio
+            initCropper(file, 'file');
+        }
+    });
+    
+    // Reset imageFile flag after cropping is done
+    const originalFileChange = $('#file')[0].onchange;
+    $('#file').on('change', function() {
+        if (!imageFile) {
+            // This is the change event after cropping, not the initial file selection
+        }
+        imageFile = null;
+    });
+    
     // Handle type change
     $('#type').on('change', function() {
         const type = $(this).val();
         
         $('#contentField, #fileField').addClass('d-none');
+        $('#content, #file').attr('required', false);
         
-        if (type === 'link' || type === 'text' || type === 'embed') {
+        // Update labels and help text based on type
+        if (type === 'link') {
             $('#contentField').removeClass('d-none');
             $('#content').attr('required', true);
-        } else if (type === 'image' || type === 'video' || type === 'file') {
+            $('#contentLabel').text('Link URL *');
+            $('#contentHelp').text('Enter the full URL (e.g., https://example.com)');
+        } else if (type === 'text') {
+            $('#contentField').removeClass('d-none');
+            $('#content').attr('required', true);
+            $('#contentLabel').text('Text Content *');
+            $('#contentHelp').text('Enter your text content here');
+        } else if (type === 'embed') {
+            $('#contentField').removeClass('d-none');
+            $('#content').attr('required', true);
+            $('#contentLabel').text('Embed Code (iframe/widget) *');
+            $('#contentHelp').text('Paste your embed code from YouTube, Twitter, etc.');
+        } else if (type === 'video') {
+            $('#contentField').removeClass('d-none');
+            $('#content').attr('required', true);
+            $('#contentLabel').text('YouTube Video ID *');
+            $('#contentHelp').text('From https://youtube.com/watch?v=VIDEO_ID, use only VIDEO_ID (e.g., dQw4w9WgXcQ)');
+        } else if (type === 'image') {
             $('#fileField').removeClass('d-none');
-            $('#file').attr('required', true);
+            $('#file').attr('required', true).attr('accept', 'image/*');
+            $('#fileLabel').text('Image File *');
+            $('#fileHelp').text('Upload an image file (JPG, PNG, GIF, etc.)');
+        } else if (type === 'file') {
+            $('#fileField').removeClass('d-none');
+            $('#file').attr('required', true).attr('accept', '*');
+            $('#fileLabel').text('File to Upload *');
+            $('#fileHelp').text('Upload any file type (PDF, DOC, ZIP, etc.)');
         }
     });
 
@@ -226,6 +356,135 @@ $(document).ready(function() {
                         icon: 'error',
                         title: 'Error!',
                         text: xhr.responseJSON.message || 'Something went wrong!'
+                    });
+                }
+            }
+        });
+    });
+
+    // Edit component - open modal and populate data
+    $('.edit-component').on('click', function() {
+        const componentId = $(this).data('id');
+        
+        // Fetch component data
+        $.ajax({
+            url: `/link-groups/{{ $linkGroup->slug }}/components/${componentId}/edit`,
+            method: 'GET',
+            success: function(response) {
+                // Populate form fields
+                $('#edit_component_id').val(response.component.id);
+                $('#edit_type').val(response.component.type).trigger('change');
+                $('#edit_title').val(response.component.title);
+                $('#edit_emoji').val(response.component.emoji);
+                $('#edit_content').val(response.component.content);
+                
+                // Show current file preview if exists
+                if (response.component.file_path) {
+                    let preview = '';
+                    if (response.component.type === 'image') {
+                        preview = `<img src="/storage/${response.component.file_path}" class="img-thumbnail" style="max-height: 100px;">`;
+                    } else if (response.component.type === 'file') {
+                        preview = `<p class="text-muted small">Current file: ${response.component.file_path.split('/').pop()}</p>`;
+                    }
+                    $('#currentFilePreview').html(preview);
+                } else {
+                    $('#currentFilePreview').html('');
+                }
+                
+                // Show modal
+                $('#editComponentModal').modal('show');
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to load component data'
+                });
+            }
+        });
+    });
+
+    // Handle edit type change (same logic as add)
+    $('#edit_type').on('change', function() {
+        const type = $(this).val();
+        
+        $('#editContentField, #editFileField').addClass('d-none');
+        $('#edit_content, #edit_file').attr('required', false);
+        
+        if (type === 'link') {
+            $('#editContentField').removeClass('d-none');
+            $('#edit_content').attr('required', true);
+            $('#editContentLabel').text('Link URL *');
+            $('#editContentHelp').text('Enter the full URL (e.g., https://example.com)');
+        } else if (type === 'text') {
+            $('#editContentField').removeClass('d-none');
+            $('#edit_content').attr('required', true);
+            $('#editContentLabel').text('Text Content *');
+            $('#editContentHelp').text('Enter your text content here');
+        } else if (type === 'embed') {
+            $('#editContentField').removeClass('d-none');
+            $('#edit_content').attr('required', true);
+            $('#editContentLabel').text('Embed Code (iframe/widget) *');
+            $('#editContentHelp').text('Paste your embed code from YouTube, Twitter, etc.');
+        } else if (type === 'video') {
+            $('#editContentField').removeClass('d-none');
+            $('#edit_content').attr('required', true);
+            $('#editContentLabel').text('YouTube Video ID *');
+            $('#editContentHelp').text('From https://youtube.com/watch?v=VIDEO_ID, use only VIDEO_ID (e.g., dQw4w9WgXcQ)');
+        } else if (type === 'image') {
+            $('#editFileField').removeClass('d-none');
+            $('#edit_file').attr('accept', 'image/*');
+            $('#editFileLabel').text('Image File');
+            $('#editFileHelp').text('Leave empty to keep current image, or upload new image to replace');
+        } else if (type === 'file') {
+            $('#editFileField').removeClass('d-none');
+            $('#edit_file').attr('accept', '*');
+            $('#editFileLabel').text('File to Upload');
+            $('#editFileHelp').text('Leave empty to keep current file, or upload new file to replace');
+        }
+    });
+
+    // Handle edit form submission
+    $('#editComponentForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        $('.form-control').removeClass('is-invalid');
+        $('.invalid-feedback').text('');
+        
+        const btn = $('#submitEditComponentBtn');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
+        
+        const componentId = $('#edit_component_id').val();
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: `/link-groups/{{ $linkGroup->slug }}/components/${componentId}`,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $('#editComponentModal').modal('hide');
+                Toast.fire({
+                    icon: 'success',
+                    title: response.message
+                });
+                location.reload();
+            },
+            error: function(xhr) {
+                btn.prop('disabled', false).html('<i class="fas fa-save"></i> Update Component');
+                
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    $.each(errors, function(key, value) {
+                        $(`#edit_${key}`).addClass('is-invalid');
+                        $(`#edit_${key}`).siblings('.invalid-feedback').text(value[0]);
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: xhr.responseJSON.message || 'Failed to update component!'
                     });
                 }
             }

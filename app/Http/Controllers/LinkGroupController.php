@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LinkGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class LinkGroupController extends Controller
@@ -18,11 +19,8 @@ class LinkGroupController extends Controller
     {
         $user = auth()->user();
         
-        if ($user->isAdmin()) {
-            $linkGroups = LinkGroup::with('user')->withCount('components')->latest()->paginate(15);
-        } else {
-            $linkGroups = $user->linkGroups()->withCount('components')->latest()->paginate(15);
-        }
+        // Always show only user's own links, regardless of role
+        $linkGroups = $user->linkGroups()->withCount('components')->latest()->paginate(15);
 
         return view('link-groups.index', compact('linkGroups'));
     }
@@ -39,9 +37,20 @@ class LinkGroupController extends Controller
             'description' => 'nullable|string',
             'background_color' => 'required|string|max:7',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'password' => 'nullable|string|min:6',
+            'instagram_url' => 'nullable|url',
+            'facebook_url' => 'nullable|url',
+            'x_url' => 'nullable|url',
+            'threads_url' => 'nullable|url',
+            'website_url' => 'nullable|url',
         ]);
 
         $validated['user_id'] = auth()->id();
+
+        // Hash password if provided
+        if ($request->filled('password')) {
+            $validated['password'] = Hash::make($request->password);
+        }
 
         // Handle thumbnail upload
         if ($request->hasFile('thumbnail')) {
@@ -93,7 +102,21 @@ class LinkGroupController extends Controller
             'background_color' => 'required|string|max:7',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean',
+            'password' => 'nullable|string|min:6',
+            'instagram_url' => 'nullable|url',
+            'facebook_url' => 'nullable|url',
+            'x_url' => 'nullable|url',
+            'threads_url' => 'nullable|url',
+            'website_url' => 'nullable|url',
         ]);
+
+        // Hash password if provided
+        if ($request->filled('password')) {
+            $validated['password'] = Hash::make($request->password);
+        } else {
+            // Don't update password if field is empty
+            unset($validated['password']);
+        }
 
         // Handle thumbnail upload
         if ($request->hasFile('thumbnail')) {

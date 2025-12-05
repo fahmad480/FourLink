@@ -53,6 +53,71 @@
                             <div id="thumbnailPreview" class="mt-2"></div>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password Protection (Optional)</label>
+                            <input type="password" class="form-control" id="password" 
+                                   name="password" placeholder="Leave empty to keep current password">
+                            <div class="invalid-feedback"></div>
+                            <small class="text-muted">
+                                @if($linkGroup->password)
+                                    <span class="text-success"><i class="fas fa-lock"></i> Password is set. Enter new password to change or leave empty to keep.</span>
+                                @else
+                                    <span>Visitors will need this password to view the link group. Leave empty for public access.</span>
+                                @endif
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <h5>Social Media Links (Optional)</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="instagram_url" class="form-label">
+                                        <i class="fab fa-instagram text-danger"></i> Instagram
+                                    </label>
+                                    <input type="url" class="form-control" id="instagram_url" 
+                                           name="instagram_url" value="{{ $linkGroup->instagram_url }}"
+                                           placeholder="https://instagram.com/username">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="facebook_url" class="form-label">
+                                        <i class="fab fa-facebook text-primary"></i> Facebook
+                                    </label>
+                                    <input type="url" class="form-control" id="facebook_url" 
+                                           name="facebook_url" value="{{ $linkGroup->facebook_url }}"
+                                           placeholder="https://facebook.com/username">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="x_url" class="form-label">
+                                        <i class="fab fa-x-twitter"></i> X (Twitter)
+                                    </label>
+                                    <input type="url" class="form-control" id="x_url" 
+                                           name="x_url" value="{{ $linkGroup->x_url }}"
+                                           placeholder="https://x.com/username">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="threads_url" class="form-label">
+                                        <i class="fab fa-threads"></i> Threads
+                                    </label>
+                                    <input type="url" class="form-control" id="threads_url" 
+                                           name="threads_url" value="{{ $linkGroup->threads_url }}"
+                                           placeholder="https://threads.net/@username">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="website_url" class="form-label">
+                                        <i class="fas fa-globe"></i> Website
+                                    </label>
+                                    <input type="url" class="form-control" id="website_url" 
+                                           name="website_url" value="{{ $linkGroup->website_url }}"
+                                           placeholder="https://yourwebsite.com">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="is_active" 
                                    name="is_active" value="1" {{ $linkGroup->is_active ? 'checked' : '' }}>
@@ -77,21 +142,35 @@
 </div>
 @endsection
 
+@include('components.cropper-modal')
+
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Preview thumbnail
+    let thumbnailFile = null;
+    
+    // Trigger cropper for thumbnail with fixed ratio (16:9)
     $('#thumbnail').on('change', function(e) {
         const file = e.target.files[0];
         if (file) {
+            thumbnailFile = file;
+            // Initialize cropper with 16:9 aspect ratio
+            initCropper(file, 'thumbnail', 16/9);
+        }
+    });
+    
+    // After cropping, show preview
+    $('#thumbnail').on('change', function(e) {
+        if (this.files && this.files[0] && !thumbnailFile) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 $('#thumbnailPreview').html(`
                     <img src="${e.target.result}" class="img-thumbnail" style="max-height: 200px;">
                 `);
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(this.files[0]);
         }
+        thumbnailFile = null;
     });
 
     $('#editLinkGroupForm').on('submit', function(e) {

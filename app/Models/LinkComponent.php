@@ -13,10 +13,12 @@ class LinkComponent extends Model
         'link_group_id',
         'type',
         'title',
+        'emoji',
         'content',
         'file_path',
         'metadata',
         'order',
+        'click_count',
         'is_active',
     ];
 

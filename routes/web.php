@@ -26,6 +26,7 @@ Route::get('/', function () {
 
 // Public Link Group View
 Route::get('/l/{slug}', [PublicController::class, 'show'])->name('public.show');
+Route::post('/l/{slug}/verify', [PublicController::class, 'verifyPassword'])->name('public.verify');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
