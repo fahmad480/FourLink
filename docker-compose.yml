@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fourlink_app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - fourlink_network
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: fourlink_nginx
+    ports:
+      - "3020:80"
+    volumes:
+      - .:/var/www/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - fourlink_network
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: fourlink_mysql
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-laravel}
+      MYSQL_USER: ${DB_USER:-fourlink_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3312:3306"
+    networks:
+      - fourlink_network
+    restart: unless-stopped
+
+networks:
+  fourlink_network:
+
+volumes:
+  mysql_data:
