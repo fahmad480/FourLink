@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'User Management - FourLink')
+@section('title', 'User Management - ' . $appName)
 
 @section('content')
 <div class="container">

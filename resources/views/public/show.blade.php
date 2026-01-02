@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $linkGroup->title }} - FourLink</title>
+    <title>{{ $linkGroup->title }} - {{ $appName }}</title>
     
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     
@@ -183,7 +183,7 @@
             
             <div class="mt-4 pt-4 border-top">
                 <small class="text-muted">
-                    <i class="fas fa-link"></i> Powered by <strong>FourLink</strong>
+                    <i class="fas fa-link"></i> Powered by <strong>{{ $appName }}</strong>
                 </small>
             </div>
         </div>

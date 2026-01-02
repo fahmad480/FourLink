@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $linkGroup->title . ' - FourLink')
+@section('title', $linkGroup->title . ' - ' . $appName)
 
 @section('content')
 <div class="container">

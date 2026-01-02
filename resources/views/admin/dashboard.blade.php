@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Dashboard - FourLink')
+@section('title', 'Admin Dashboard - ' . $appName)
 
 @section('content')
 <div class="container">

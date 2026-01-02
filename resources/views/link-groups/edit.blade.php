@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Link Group - FourLink')
+@section('title', 'Edit Link Group - ' . $appName)
 
 @section('content')
 <div class="container">

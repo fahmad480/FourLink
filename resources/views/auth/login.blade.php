@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Login - FourLink')
+@section('title', 'Login - ' . $appName)
 
 @section('content')
 <div class="container">
@@ -10,7 +10,7 @@
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
                         <h1 class="h3 mb-3 fw-bold">
-                            <i class="fas fa-link text-primary"></i> FourLink
+                            <i class="fas fa-link text-primary"></i> {{ $appName }}
                         </h1>
                         <p class="text-muted">Login to your account</p>
                     </div>

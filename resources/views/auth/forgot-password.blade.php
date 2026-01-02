@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Forgot Password - FourLink')
+@section('title', 'Forgot Password - ' . $appName)
 
 @section('content')
 <div class="container">
