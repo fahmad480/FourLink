@@ -55,6 +55,12 @@
                                class="btn btn-sm btn-primary flex-fill">
                                 <i class="fas fa-eye"></i> Manage
                             </a>
+                            <a href="{{ public_route('public.show', $linkGroup->slug) }}" 
+                               class="btn btn-sm btn-success" 
+                               target="_blank" 
+                               title="View Public Link Group">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
                             <a href="{{ route('link-groups.edit', $linkGroup->slug) }}" 
                                class="btn btn-sm btn-warning">
                                 <i class="fas fa-edit"></i>

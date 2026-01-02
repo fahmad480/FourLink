@@ -22,7 +22,7 @@
                             </div>
                         </div>
                         <div class="d-flex gap-2">
-                            <a href="{{ route('public.show', $linkGroup->slug) }}" 
+                            <a href="{{ public_route('public.show', $linkGroup->slug) }}" 
                                class="btn btn-sm btn-info" target="_blank">
                                 <i class="fas fa-external-link-alt"></i> View Public
                             </a>
@@ -248,7 +248,7 @@
 </div>
 @endsection
 
-@include('components.cropper-modal')
+{{-- @include('components.cropper-modal') --}}
 
 @push('scripts')
 <script>

@@ -7,6 +7,7 @@ use App\Http\Controllers\LinkGroupController;
 use App\Http\Controllers\LinkComponentController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\SystemParameterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +75,10 @@ Route::middleware('auth')->group(function () {
         
         // All Link Groups
         Route::get('/link-groups', [AdminController::class, 'linkGroups'])->name('link-groups');
+        
+        // System Parameters
+        Route::resource('system-parameters', SystemParameterController::class);
+        Route::post('/system-parameters/{systemParameter}/set-null', [SystemParameterController::class, 'setNull'])->name('system-parameters.set-null');
     });
 });
 

@@ -62,7 +62,7 @@
                                            class="btn btn-primary">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('public.show', $linkGroup->slug) }}" 
+                                        <a href="{{ public_route('public.show', $linkGroup->slug) }}" 
                                            class="btn btn-info" target="_blank">
                                             <i class="fas fa-external-link-alt"></i>
                                         </a>

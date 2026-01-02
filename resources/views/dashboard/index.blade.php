@@ -119,7 +119,11 @@
                         <div class="d-flex gap-2">
                             <a href="{{ route('link-groups.show', $linkGroup->slug) }}" 
                                class="btn btn-sm btn-primary flex-fill">
-                                <i class="fas fa-eye"></i> View
+                                <i class="fas fa-eye"></i> Manage
+                            </a>
+                            <a href="{{ public_route('public.show', $linkGroup->slug) }}" 
+                               class="btn btn-sm btn-success">
+                                <i class="fas fa-external-link-alt"></i>
                             </a>
                             <a href="{{ route('link-groups.edit', $linkGroup->slug) }}" 
                                class="btn btn-sm btn-warning">
@@ -129,17 +133,6 @@
                                     data-slug="{{ $linkGroup->slug }}">
                                 <i class="fas fa-trash"></i>
                             </button>
-                        </div>
-
-                        <div class="mt-2">
-                            <small class="text-muted">
-                                Public URL: 
-                                <a href="{{ route('public.show', $linkGroup->slug) }}" 
-                                   target="_blank" 
-                                   class="text-decoration-none">
-                                    {{ route('public.show', $linkGroup->slug) }}
-                                </a>
-                            </small>
                         </div>
                     </div>
                 </div>

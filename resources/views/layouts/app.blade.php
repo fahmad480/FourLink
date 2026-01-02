@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'FourLink - Link Group Manager')</title>
+    <title>@yield('title', $appName . ' - Link Group Manager')</title>
     
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     
@@ -14,7 +14,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ route('dashboard') }}">
-                <i class="fas fa-link"></i> FourLink
+                <i class="fas fa-link"></i> {{ $appName }}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -41,6 +41,8 @@
                                 <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                                 <li><a class="dropdown-item" href="{{ route('admin.users') }}">Users</a></li>
                                 <li><a class="dropdown-item" href="{{ route('admin.link-groups') }}">All Link Groups</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.system-parameters.index') }}"><i class="fas fa-cog"></i> System Parameters</a></li>
                             </ul>
                         </li>
                         @endrole

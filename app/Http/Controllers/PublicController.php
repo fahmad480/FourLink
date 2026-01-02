@@ -77,7 +77,7 @@ class PublicController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Access granted!',
-                    'redirect' => route('public.show', $slug)
+                    'redirect' => public_route('public.show', $slug)
                 ]);
             }
 
