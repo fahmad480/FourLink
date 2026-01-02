@@ -37,6 +37,7 @@ class LinkGroupController extends Controller
             'description' => 'nullable|string',
             'background_color' => 'required|string|max:7',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active' => 'nullable|boolean',
             'password' => 'nullable|string|min:6',
             'instagram_url' => 'nullable|url',
             'facebook_url' => 'nullable|url',
@@ -46,6 +47,9 @@ class LinkGroupController extends Controller
         ]);
 
         $validated['user_id'] = auth()->id();
+        
+        // Handle checkbox: if not present in request, set to false
+        $validated['is_active'] = $request->has('is_active') ? (bool)$request->is_active : false;
 
         // Hash password if provided
         if ($request->filled('password')) {
@@ -101,8 +105,9 @@ class LinkGroupController extends Controller
             'description' => 'nullable|string',
             'background_color' => 'required|string|max:7',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
             'password' => 'nullable|string|min:6',
+            'remove_password' => 'nullable|boolean',
             'instagram_url' => 'nullable|url',
             'facebook_url' => 'nullable|url',
             'x_url' => 'nullable|url',
@@ -110,13 +115,22 @@ class LinkGroupController extends Controller
             'website_url' => 'nullable|url',
         ]);
 
-        // Hash password if provided
-        if ($request->filled('password')) {
+        // Handle checkbox: if not present in request, set to false
+        $validated['is_active'] = $request->has('is_active') ? (bool)$request->is_active : false;
+
+        // Handle password removal
+        if ($request->has('remove_password') && $request->remove_password) {
+            $validated['password'] = null;
+        } elseif ($request->filled('password')) {
+            // Hash password if provided
             $validated['password'] = Hash::make($request->password);
         } else {
             // Don't update password if field is empty
             unset($validated['password']);
         }
+        
+        // Remove the remove_password field from validated data
+        unset($validated['remove_password']);
 
         // Handle thumbnail upload
         if ($request->hasFile('thumbnail')) {

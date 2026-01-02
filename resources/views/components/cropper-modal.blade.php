@@ -12,7 +12,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Finish</button>
                 <button type="button" class="btn btn-primary" id="cropImageBtn">
                     <i class="fas fa-crop"></i> Crop & Save
                 </button>

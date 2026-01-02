@@ -62,7 +62,7 @@
                                 </div>
                             @endif
                             
-                            <input type="file" class="form-control" id="file" name="file">
+                            <input type="file" class="form-control" id="file" name="file" data-skip-cropper="true">
                             <div class="invalid-feedback"></div>
                             <small class="text-muted">Leave empty to keep current file</small>
                             <div id="filePreview" class="mt-2"></div>

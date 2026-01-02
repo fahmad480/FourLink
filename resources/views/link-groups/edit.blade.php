@@ -65,6 +65,15 @@
                                     <span>Visitors will need this password to view the link group. Leave empty for public access.</span>
                                 @endif
                             </small>
+                            @if($linkGroup->password)
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" id="remove_password" 
+                                           name="remove_password" value="1">
+                                    <label class="form-check-label text-danger" for="remove_password">
+                                        <i class="fas fa-unlock"></i> Remove password protection (make public)
+                                    </label>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="mb-3">
@@ -173,6 +182,15 @@ $(document).ready(function() {
         thumbnailFile = null;
     });
 
+    // Handle remove password checkbox
+    $('#remove_password').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#password').val('').prop('disabled', true).attr('placeholder', 'Password will be removed');
+        } else {
+            $('#password').prop('disabled', false).attr('placeholder', 'Leave empty to keep current password');
+        }
+    });
+
     $('#editLinkGroupForm').on('submit', function(e) {
         e.preventDefault();
         
@@ -183,6 +201,11 @@ $(document).ready(function() {
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
         
         const formData = new FormData(this);
+        
+        // Re-enable password field before submit to ensure FormData captures it
+        if ($('#remove_password').is(':checked')) {
+            $('#password').prop('disabled', false);
+        }
         
         $.ajax({
             url: '{{ route("link-groups.update", $linkGroup->slug) }}',

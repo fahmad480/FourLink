@@ -46,7 +46,7 @@
 
                         <div class="mb-3" id="fileField" style="display: none;">
                             <label for="file" class="form-label">File *</label>
-                            <input type="file" class="form-control" id="file" name="file">
+                            <input type="file" class="form-control" id="file" name="file" data-skip-cropper="true">
                             <div class="invalid-feedback"></div>
                             <small class="text-muted" id="fileHelp"></small>
                             <div id="filePreview" class="mt-2"></div>
